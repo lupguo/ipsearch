@@ -14,7 +14,7 @@ import (
 )
 
 // ipsearch 版本控制
-const version  = "beta 0.1.1"
+const version  = "beta 0.1.2"
 
 // version 获取版本信息
 func Version() string {
@@ -199,7 +199,7 @@ func (ipsRs *IpsResult) Message(mode string) (msg string, err error) {
 	case "text":
 		fallthrough
 	default:
-		return fmt.Sprintf("Ip: %s, Network: %s, Address: %s\n", ipsRs.Ip, ipsRs.Network, ipsRs.Addr), nil
+		return fmt.Sprintf("Ip: %s, Network: %s, Address: %s", ipsRs.Ip, ipsRs.Network, ipsRs.Addr), nil
 	}
 
 }

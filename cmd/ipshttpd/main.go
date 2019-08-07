@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"github.com/tkstorm/ip-search/ipsearch"
 	"log"
+	"net"
 	"net/http"
+	"os"
+	"os/signal"
 )
 
 var (
@@ -23,7 +26,7 @@ func init() {
 func main() {
 	// version
 	if version {
-		fmt.Printf("ipshttpd %s", ipsearch.Version())
+		fmt.Println("ipshttpd " + ipsearch.Version())
 		return
 	}
 
@@ -31,7 +34,16 @@ func main() {
 	routeRegister()
 
 	// server running
-	log.Printf("ipshttpd(%s) listen on %s", ipsearch.Version(), listen)
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt)
+		select {
+		case <-c:
+			log.Println("ipshttpd is shutdown")
+		}
+		os.Exit(1)
+	}()
+	log.Printf("ipshttpd listen on %s, %s", listen, ipsearch.Version())
 	log.Fatalln(http.ListenAndServe(listen, nil))
 }
 
@@ -62,13 +74,27 @@ func ipsHandler(w http.ResponseWriter, r *http.Request) {
 	msg, err := func() (msg string, err error) {
 		// parse form get params
 		r.ParseForm()
-		ip := r.FormValue("ip")
 
 		// ip search
 		ips := &ipsearch.Ips{
-			Debug:   false,
+			Debug:   true,
 			Proxy:   r.FormValue("proxy"),
 			Timeout: 0,
+		}
+
+		// request search ip pick
+		ip := r.FormValue("ip")
+		if ip == "" {
+			// host ip
+			hostIp, _, err := net.SplitHostPort(r.RemoteAddr)
+			if err == nil && hostIp != "127.0.0.1" {
+				ip = hostIp
+			}
+			// by proxy request
+			realIp := r.Header.Get("X-Real-IP")
+			if realIp != "" {
+				ip = realIp
+			}
 		}
 		ipsRs, err := ips.Search(ip)
 		if err != nil {
@@ -85,9 +111,12 @@ func ipsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// result handler
 	if err != nil {
+		log.SetOutput(os.Stderr)
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
+		log.SetOutput(os.Stdout)
+		log.Println(msg)
 		_, _ = fmt.Fprint(w, msg)
 	}
 }
