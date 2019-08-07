@@ -6,10 +6,11 @@
 ### 安装
 ```
 // 仅安装insearch命令
-go install https://github.com/tkstorm/ip-search/cmd/ipsearch
+go get -v github.com/tkstorm/ip-search/...
+go install -v github.com/tkstorm/ip-search/cmd/insearch
 
 // 安装ipsearch命令工具，以及ipshttpd服务
-go install https://github.com/tkstorm/ip-search/cmd/...
+go install -v github.com/tkstorm/ip-search/cmd/...
 ```
 
 ### ipsearch 使用
