@@ -1,4 +1,4 @@
-package ipserach
+package ipsearch
 
 import (
 	"errors"

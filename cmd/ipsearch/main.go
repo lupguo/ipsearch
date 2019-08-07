@@ -4,7 +4,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/tkstorm/ip-search/ipserach"
+	"github.com/tkstorm/ip-search/ipsearch"
 	"log"
 	"time"
 )
@@ -25,7 +25,7 @@ func main() {
 	flag.Parse()
 
 	// ip search
-	ips := &ipserach.Ips{
+	ips := &ipsearch.Ips{
 		Debug:   debug,
 		Proxy:   proxy,
 		Timeout: timeout,

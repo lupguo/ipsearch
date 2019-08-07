@@ -4,7 +4,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/tkstorm/ip-search/ipserach"
+	"github.com/tkstorm/ip-search/ipsearch"
 	"log"
 	"net/http"
 )
@@ -47,7 +47,7 @@ func ipSearch(w http.ResponseWriter, r *http.Request) {
 	ip := r.FormValue("ip")
 
 	// ip search
-	ips := &ipserach.Ips{
+	ips := &ipsearch.Ips{
 		Debug:   false,
 		Proxy:   r.FormValue("proxy"),
 		Timeout: 0,
