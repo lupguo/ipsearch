@@ -5,42 +5,51 @@ import (
 	"flag"
 	"fmt"
 	"github.com/tkstorm/ip-search/ipsearch"
-	"log"
 	"time"
 )
 
 var (
 	ip, proxy, mode string
-	debug           bool
+	debug, version  bool
 	timeout         time.Duration
 )
 
-func main() {
+func init()  {
 	// arg from cmdline
 	flag.StringVar(&ip, "ip", "myip", "ip to search, myip is current ip")
 	flag.StringVar(&proxy, "proxy", "", "request by proxy, using for debug")
 	flag.StringVar(&mode, "mode", "text", "response content mode (json|text)")
 	flag.BoolVar(&debug, "debug", false, "debug for request response content ")
 	flag.DurationVar(&timeout, "timeout", 10*time.Second, "set http request timeout seconds")
+	flag.BoolVar(&version, "version", false, "ipsearch version")
 	flag.Parse()
+}
 
-	// ip search
-	ips := &ipsearch.Ips{
-		Debug:   debug,
-		Proxy:   proxy,
-		Timeout: timeout,
-	}
-	ipsRs, err := ips.Search(ip)
+func main() {
+	// handle ip search
+	msg, err := func() (msg string, err error) {
+		// version
+		if version {
+			return "ipsearch " + ipsearch.Version(), nil
+		}
+		// ip search
+		ips := &ipsearch.Ips{
+			Debug:   debug,
+			Proxy:   proxy,
+			Timeout: timeout,
+		}
+		ipsRs, err := ips.Search(ip)
+		if err != nil {
+			return "", fmt.Errorf("ip serach error: %s", err)
+		}
+		// out by json format
+		return ipsRs.Message(mode)
+	}()
+
+	// output search message
 	if err != nil {
-		log.Fatalf("ip serach error: %s", err)
+		fmt.Println(err)
+	}else {
+		fmt.Println(msg)
 	}
-
-	// out by json format
-	msg, err := ipsRs.Message(mode)
-	if err != nil {
-		log.Fatalf("ip serach message show error: %s", err)
-	}
-
-	// output msg
-	fmt.Println(msg)
 }

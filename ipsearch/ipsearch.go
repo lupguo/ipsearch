@@ -13,6 +13,14 @@ import (
 	"time"
 )
 
+// ipsearch 版本控制
+const version  = "beta 0.1.1"
+
+// version 获取版本信息
+func Version() string {
+	return fmt.Sprintf("version %s", version)
+}
+
 // Source 为代理源
 type Source struct {
 	Name string

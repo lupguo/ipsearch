@@ -1,4 +1,4 @@
-// ipshttpd 是ip search httpd服务器
+// ipshttpd 是ip search httpd服务器，支持通过http查询ip相关信息
 package main
 
 import (
@@ -9,36 +9,51 @@ import (
 	"net/http"
 )
 
-var listen string
+var (
+	listen  string
+	version bool
+)
 
-// httpd服务
-func main() {
+func init() {
 	flag.StringVar(&listen, "listen", "127.0.0.1:8680", "the listen address for ip search http server")
+	flag.BoolVar(&version, "version", false, "ipsearch version")
 	flag.Parse()
-	log.Println("ip search httpd listen on " + listen)
+}
+
+func main() {
+	// version
+	if version {
+		fmt.Printf("ipshttpd %s", ipsearch.Version())
+		return
+	}
 
 	// route register
 	routeRegister()
 
 	// server running
+	log.Printf("ipshttpd(%s) listen on %s", ipsearch.Version(), listen)
 	log.Fatalln(http.ListenAndServe(listen, nil))
 }
 
 // 路由注册
 func routeRegister() {
-	http.HandleFunc("/ips", ipsHandler)
+	// default handler
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		log.Println(r, r.RequestURI, r.Form)
-		helpMsg := `Usage: 
+		helpMsg := fmt.Sprintf(`Version %s
+Usage:
 	//search current client ip information
 	curl localhost:8680/ips
 
 	//search for target ip information  
 	curl localhost:8680/ips?ip=targetIp	
-`
+`, ipsearch.Version())
 		fmt.Fprintf(w, helpMsg)
 	})
+
+	// ip search handler
+	http.HandleFunc("/ips", ipsHandler)
 }
 
 // ipsHandler 用于IP查询处理
@@ -72,7 +87,7 @@ func ipsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}else {
+	} else {
 		_, _ = fmt.Fprint(w, msg)
 	}
 }

@@ -6,10 +6,10 @@
 ### 安装
 ```
 // 仅安装insearch命令
-go get -v github.com/tkstorm/ip-search/cmd/...
+go get -u -v github.com/tkstorm/ip-search/cmd/insearch
 go install -v github.com/tkstorm/ip-search/cmd/insearch
 
-// 安装ipsearch命令工具，以及ipshttpd服务
+// 安装ipsearch命令工具，以及httpd服务
 go install -v github.com/tkstorm/ip-search/cmd/...
 ```
 
