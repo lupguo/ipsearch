@@ -9,7 +9,6 @@ import (
 	"net/http"
 )
 
-
 var listen string
 
 // httpd服务
@@ -27,44 +26,53 @@ func main() {
 
 // 路由注册
 func routeRegister() {
-	http.HandleFunc("/ips", ipSearch)
-	http.HandleFunc("/ips/", ipSearch)
+	http.HandleFunc("/ips", ipsHandler)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
-		log.Println(r.RequestURI, r.Form)
-//
-//		helpMsg := `
-//
-//`
-		fmt.Fprintf(w, r.RequestURI)
+		log.Println(r, r.RequestURI, r.Form)
+		helpMsg := `Usage: 
+	//search current client ip information
+	curl localhost:8680/ips
+
+	//search for target ip information  
+	curl localhost:8680/ips?ip=targetIp	
+`
+		fmt.Fprintf(w, helpMsg)
 	})
 }
 
-// ipSearch
-func ipSearch(w http.ResponseWriter, r *http.Request) {
-	// parse form get params
-	r.ParseForm()
-	ip := r.FormValue("ip")
+// ipsHandler 用于IP查询处理
+func ipsHandler(w http.ResponseWriter, r *http.Request) {
+	// do ip search
+	msg, err := func() (msg string, err error) {
+		// parse form get params
+		r.ParseForm()
+		ip := r.FormValue("ip")
 
-	// ip search
-	ips := &ipsearch.Ips{
-		Debug:   false,
-		Proxy:   r.FormValue("proxy"),
-		Timeout: 0,
-	}
-	ipsRs, err := ips.Search(ip)
-	if err != nil {
-		log.Printf("ip serach error: %s", err)
-		return
-	}
+		// ip search
+		ips := &ipsearch.Ips{
+			Debug:   false,
+			Proxy:   r.FormValue("proxy"),
+			Timeout: 0,
+		}
+		ipsRs, err := ips.Search(ip)
+		if err != nil {
+			return fmt.Sprintf("ip serach error: %s", err), nil
+		}
 
-	// out by json format
-	msg, err := ipsRs.Message("json")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("ip serach message show error: %s", err), http.StatusInternalServerError)
+		// out by json format
+		msg, err = ipsRs.Message("json")
+		if err != nil {
+			return fmt.Sprintf("ip serach message show error: %s", err), nil
+		}
 		return
+	}()
+
+	// result handler
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}else {
+		_, _ = fmt.Fprint(w, msg)
 	}
-	_, _ = fmt.Fprint(w, msg)
 }
-
-

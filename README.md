@@ -6,7 +6,7 @@
 ### 安装
 ```
 // 仅安装insearch命令
-go get -v github.com/tkstorm/ip-search/...
+go get -v github.com/tkstorm/ip-search/cmd/...
 go install -v github.com/tkstorm/ip-search/cmd/insearch
 
 // 安装ipsearch命令工具，以及ipshttpd服务
@@ -28,7 +28,7 @@ Usage of ipsearch:
   -timeout duration
     	set http request timeout seconds (default 10s)
 
-// 查看出口IP
+// 查看出口IP相关信息
 $ ipsearch
 Ip: 210.21.233.226, Network: 联通, Address: 中国 广东 深圳
 
@@ -43,12 +43,22 @@ $ ipsearch -ip 118.144.149.206 -mode json
 
 ```
 // http服务
-$ ipshttpd -listen 127.0.0.1:8087
-2019/08/07 18:36:43 ip search httpd listen on 127.0.0.1:8087
+$ ipshttpd -listen 127.0.0.1:8680
+2019/08/07 18:36:43 ip search httpd listen on 127.0.0.1:8680
+// 请求查询
+$ curl localhost:8680
+Usage:
+	//search current client ip information
+	curl localhost:8680/ips
+
+	//search for target ip information
+	curl localhost:8680/ips?ip=targetIp
 
 // 通过curl查询
-$ curl 'localhost:8680/ips?ip=117.90.252.208'
-{"addr":"中国 江苏 镇江","network":"电信","ip":"117.90.252.208"}
+$ curl localhost:8680/ips
+{"addr":"中国 广东 深圳","network":"鹏博士","ip":"175.191.11.165"}
+$ curl 'localhost:8680/ips?ip=175.190.11.16'
+{"addr":"中国 辽宁 大连","network":"鹏博士","ip":"175.190.11.16"}
 ```
 
 ### 注意
