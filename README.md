@@ -70,3 +70,5 @@ $ curl -XPOST -d 'ip=myip' http://ip.taobao.com/service/getIpInfo2.php
     - [x] 修复了客户端请求ipshttpd没有获取到正确IP的问题
     - [x] 修复了ipshttpd的handler处理
     - [x] 新增了版本展示
+- 2019-08-13
+    - [x] 新增Docker环境支持
