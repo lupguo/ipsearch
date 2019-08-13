@@ -9,7 +9,6 @@ import (
 )
 
 // getClient 获取http客户端
-// todo 这里有资源重复创建的问题，需要通过资源池修复
 func getClient(proxy string, timeout time.Duration) (client *http.Client, err error) {
 	client = &http.Client{
 		Transport: &http.Transport{

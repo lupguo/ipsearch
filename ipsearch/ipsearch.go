@@ -14,7 +14,7 @@ import (
 )
 
 // ipsearch 版本控制
-const version  = "beta 0.1.2"
+const version = "beta 0.1.2"
 
 // version 获取版本信息
 func Version() string {
@@ -125,11 +125,13 @@ func (ips *Ips) Search(ip string) (rs *IpsResult, err error) {
 	}
 
 	// http client init once
-	ips.gctOnce.Do(func() {
-		ips.client, err = getClient(ips.Proxy, ips.Timeout)
-	})
-	if err != nil {
-		return nil, err
+	if ips.client == nil {
+		ips.gctOnce.Do(func() {
+			ips.client, err = getClient(ips.Proxy, ips.Timeout)
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// http.do
@@ -203,4 +205,3 @@ func (ipsRs *IpsResult) Message(mode string) (msg string, err error) {
 	}
 
 }
-

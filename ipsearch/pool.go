@@ -60,8 +60,7 @@ func (p *Pool) GetResource(waitTimeout time.Duration) (r *Resource, err error) {
 }
 
 // RecoverResource 当资源使用完成后，需要归还到资源池
-func (p *Pool) RecoverResource(r *Resource)  {
+func (p *Pool) RecoverResource(r *Resource) {
 	// check and refresh
 	p.availCh <- r
 }
-

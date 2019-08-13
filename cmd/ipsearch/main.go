@@ -14,7 +14,7 @@ var (
 	timeout         time.Duration
 )
 
-func init()  {
+func init() {
 	// arg from cmdline
 	flag.StringVar(&ip, "ip", "myip", "ip to search, myip is current ip")
 	flag.StringVar(&proxy, "proxy", "", "request by proxy, using for debug")
@@ -42,6 +42,7 @@ func main() {
 		if err != nil {
 			return "", fmt.Errorf("ip serach error: %s", err)
 		}
+
 		// out by json format
 		return ipsRs.Message(mode)
 	}()
@@ -49,7 +50,7 @@ func main() {
 	// output search message
 	if err != nil {
 		fmt.Println(err)
-	}else {
+	} else {
 		fmt.Println(msg)
 	}
 }

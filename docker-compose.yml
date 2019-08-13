@@ -1,0 +1,7 @@
+version: "3"
+services:
+    httpd:
+       build: .
+       image: tkstorm/ipsearch
+       ports:
+           - 8680:8680

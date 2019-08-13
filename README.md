@@ -57,6 +57,11 @@ $ curl 'localhost:8680/ips?ip=175.190.11.16'
 {"addr":"中国 辽宁 大连","network":"鹏博士","ip":"175.190.11.16"}
 ```
 
+### 原始的Ip查询信息
+```
+$ curl -XPOST -d 'ip=myip' http://ip.taobao.com/service/getIpInfo2.php
+```
+
 ### 注意
 - 2019-08-07：代码目前版本还比较粗糙，会持续完善！
     - [ ] 代理问题，寻求更好用的代理
