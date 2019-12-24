@@ -1,12 +1,14 @@
 package ipsearch
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -14,11 +16,11 @@ import (
 )
 
 // ipsearch 版本控制
-const version = "beta 0.1.2"
+const version = "beta 0.2.0"
 
 // version 获取版本信息
 func Version() string {
-	return fmt.Sprintf("version %s", version)
+	return fmt.Sprintf("ipsearch version %s", version)
 }
 
 // Source 为代理源
@@ -31,14 +33,16 @@ type Ips struct {
 	Debug   bool
 	Proxy   string
 	Timeout time.Duration
-	gctOnce sync.Once
+	once    sync.Once
 	client  *http.Client
 	source  *Source
 }
 
-// NewIps 创建一个Ip Search对象
-func NewIps() *Ips {
-	return new(Ips)
+//NewIps 初始化Ips客户端
+func NewIps(debug bool, proxy string, timeout time.Duration) *Ips {
+	ips := &Ips{Debug: debug, Proxy: proxy, Timeout: timeout}
+	ips.makeClient()
+	return ips
 }
 
 // IpsResult IP查询结果
@@ -96,48 +100,44 @@ func (ips *Ips) Search(ip string) (rs *IpsResult, err error) {
 	if strings.Trim(ip, " ") == "" {
 		ip = "myip"
 	}
-	body := strings.NewReader(fmt.Sprintf("ip=%s", ip))
+	body := strings.NewReader("ip=" + ip)
 	dstUrl := "http://ip.taobao.com/service/getIpInfo2.php"
 	req, err := http.NewRequest("POST", dstUrl, body)
 	if err != nil {
 		return nil, err
 	}
-	//dstUrl := "http://ip.taobao.com/service/getIpInfo.php?ip=" + ip
-	//req, err := http.NewRequest("GET", dstUrl, nil)
-	//if err != nil {
-	//	return nil, err
-	//}
-
 	// head agent setting
-	hkvs := map[string]string{
-		"User-Agent":    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
-		"Content-Type":  "application/x-www-form-urlencoded",
-		"Origin":        "http://ip.taobao.com",
-		"Cache-Control": "no-cache",
-		"Referer":       "http://ip.taobao.com/ipSearch.html",
-		"Connection":    "keep-alive",
-		"Accept":        "*/*",
-		//"Accept-Encoding": "gzip",
-		//"X-Requested-With": "XMLHttpRequest",
+	head := map[string]string{
+		"User-Agent":       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
+		"Content-Type":     "application/x-www-form-urlencoded",
+		"Origin":           "http://ip.taobao.com",
+		"Cache-Control":    "no-cache",
+		"Referer":          "http://ip.taobao.com/ipSearch.html",
+		"Connection":       "keep-alive",
+		"Accept":           "*/*",
+		"X-Requested-With": "XMLHttpRequest",
 	}
-	for k, v := range hkvs {
+	for k, v := range head {
 		req.Header.Set(k, v)
 	}
 
-	// http client init once
-	if ips.client == nil {
-		ips.gctOnce.Do(func() {
-			ips.client, err = getClient(ips.Proxy, ips.Timeout)
-		})
-		if err != nil {
-			return nil, err
+	// http 请求+重试
+	over := time.Tick(5 * time.Second)
+	var resp *http.Response
+loop:
+	for {
+		select {
+		case <-over:
+			return nil, errors.New("request tick timeout")
+		default:
+			resp, err = ips.client.Do(req)
+			if err != nil {
+				log.Println(err)
+				time.Sleep(100 * time.Millisecond)
+				continue
+			}
+			break loop
 		}
-	}
-
-	// http.do
-	resp, err := ips.client.Do(req)
-	if err != nil {
-		return nil, err
 	}
 	defer resp.Body.Close()
 
@@ -177,6 +177,28 @@ func (ips *Ips) Search(ip string) (rs *IpsResult, err error) {
 	return ipsRs, err
 }
 
+// makeClient 创建
+func (ips *Ips) makeClient() {
+	if ips.client == nil {
+		ips.once.Do(func() {
+			ips.client = &http.Client{
+				Transport: &http.Transport{
+					Proxy: func(request *http.Request) (*url.URL, error) {
+						if ips.Proxy == "" {
+							return nil, nil
+						}
+						return url.Parse(ips.Proxy)
+					},
+					TLSClientConfig: &tls.Config{
+						InsecureSkipVerify: true,
+					},
+				},
+				Timeout: ips.Timeout,
+			}
+		})
+	}
+}
+
 // SetProxy 针对IpSearch设置代理，主要用于本地调试
 func (ips *Ips) SetProxy(proxy string) *Ips {
 	ips.Proxy = proxy
@@ -198,10 +220,7 @@ func (ipsRs *IpsResult) Message(mode string) (msg string, err error) {
 			return "", err
 		}
 		return string(rt), nil
-	case "text":
-		fallthrough
 	default:
 		return fmt.Sprintf("Ip: %s, Network: %s, Address: %s", ipsRs.Ip, ipsRs.Network, ipsRs.Addr), nil
 	}
-
 }

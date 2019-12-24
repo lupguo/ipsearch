@@ -26,31 +26,20 @@ func init() {
 }
 
 func main() {
-	// handle ip search
-	msg, err := func() (msg string, err error) {
-		// version
-		if version {
-			return "ipsearch " + ipsearch.Version(), nil
-		}
-		// ip search
-		ips := &ipsearch.Ips{
-			Debug:   debug,
-			Proxy:   proxy,
-			Timeout: timeout,
-		}
-		ipsRs, err := ips.Search(ip)
-		if err != nil {
-			return "", fmt.Errorf("ip serach error: %s", err)
-		}
-
-		// out by json format
-		return ipsRs.Message(mode)
-	}()
-
-	// output search message
+	if version {
+		fmt.Println("ipsearch " + ipsearch.Version())
+		return
+	}
+	ips := ipsearch.NewIps(debug, proxy, timeout)
+	ipsRs, err := ips.Search(ip)
+	if err != nil {
+		fmt.Printf("ipserach error: %s", err)
+		return
+	}
+	msg, err := ipsRs.Message(mode)
 	if err != nil {
 		fmt.Println(err)
-	} else {
-		fmt.Println(msg)
+		return
 	}
+	fmt.Println(msg)
 }
