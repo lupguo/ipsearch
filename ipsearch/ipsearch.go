@@ -78,7 +78,7 @@ type IpsOrigin struct {
 	Data map[string]string `json:"data"`
 }
 
-// Search 做IP搜索，返回IpResult指针，或者任何错误信息
+// Search 基于Tick退避做IP搜索，返回IpResult指针，或者任何错误信息
 // 原始请求头
 // POST /service/getIpInfo2.php HTTP/1.1
 //		Host: ip.taobao.com
@@ -133,7 +133,7 @@ loop:
 			resp, err = ips.client.Do(req)
 			if err != nil {
 				log.Println(err)
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(500 * time.Millisecond)
 				continue
 			}
 			break loop
@@ -164,7 +164,6 @@ loop:
 	}
 
 	// ips result
-	// {"addr": "country region city (area county)", "network": "isp", "ip": "ip" }
 	if ips.Debug {
 		log.Println(v.Data)
 	}
