@@ -2,6 +2,6 @@ version: "3"
 services:
     httpd:
        build: .
-       image: tkstorm/ipsearch
+       image: lupguo/ipsearch
        ports:
            - 8680:8680

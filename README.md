@@ -1,4 +1,4 @@
-## ip-search
+## ipsearch
 > ip serach 查询是基于 http://ip.taobao.com/ipSearch.html 接口代理获取的数据（有请求频率限制）
 > 
 > 以前使用ip.cn会出现频次限制，可以基于命令行走淘宝接口查询
@@ -6,7 +6,7 @@
 ### 安装
 ```
 // 安装ipsearch命令工具，以及httpd服务
-go get -u -v github.com/tkstorm/ip-search/cmd/...
+go get -u -v github.com/lupguo/ipsearch/cmd/...
 ```
 
 ### ipsearch 使用

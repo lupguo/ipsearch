@@ -3,14 +3,19 @@ package ipsclient
 import (
 	"crypto/tls"
 	"encoding/json"
-	"errors"
-	"github.com/tkstorm/ip-search/ipsutil"
+	errors "errors"
+	"github.com/lupguo/ipsearch/ipsutil"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
 	"time"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 var taobaoUrl = "http://ip.taobao.com/service/getIpInfo.php"
 
@@ -119,13 +124,22 @@ func (ips *Ips) updateURL(ip string) {
 	ips.Request.URL = u
 }
 
+var (
+	errRetryTimeout     = errors.New("HTTP request timed out and exceeded the maximum retry time")
+	errRequestFailed    = errors.New("HTTP request failed, keep trying")
+	errHttpStatusCode   = errors.New("HTTP request response is not 200 status code, keep trying")
+	errTaobaoStatusCode = errors.New("the json data status code returned from Taobao is non-zero")
+)
+
+// httpResult 执行http request通道返回的内容
+type httpResult struct {
+	r *Result
+	e error
+}
+
 // doHttpRequest 执行HTTP请求，设定3秒超时，如果查询失败，尝试重试
 func (ips *Ips) doHttpRequest() (r *Result, err error) {
-	type re struct {
-		r *Result
-		e error
-	}
-	ch := make(chan re)
+	ch := make(chan httpResult)
 	go func() {
 		over := false
 		after := time.After(30 * time.Second)
@@ -133,24 +147,36 @@ func (ips *Ips) doHttpRequest() (r *Result, err error) {
 			select {
 			case <-after:
 				over = true
-				ch <- re{nil, errors.New("do http request retry timeout")}
+				ch <- httpResult{nil, errRetryTimeout}
 			default:
 				resp, err := ips.Client.Do(ips.Request)
-				if err != nil || resp.StatusCode != http.StatusOK {
+				if ips.Debug {
+					log.Printf("%v %v\n", err, resp)
+				}
+				if err != nil {
+					if ips.Debug {
+						log.Println(errRequestFailed)
+					}
+					time.Sleep(1000 * time.Millisecond)
+					continue
+				}
+				if resp.StatusCode != http.StatusOK {
+					if ips.Debug {
+						log.Println(errHttpStatusCode)
+					}
 					time.Sleep(1000 * time.Millisecond)
 					continue
 				}
 				r, err := ips.parseBody(resp)
-				ch <- re{r, nil}
+				ch <- httpResult{r, nil}
 				over = true
 			}
 		}
 		close(ch)
 	}()
-	return (<-ch).r, (<-ch).e
+	chr := <-ch
+	return chr.r, chr.e
 }
-
-var errTaobaoStatusCode = errors.New("the json data status code returned from Taobao is non-zero")
 
 // parseBody 解析淘宝的IP响应结果
 func (ips *Ips) parseBody(resp *http.Response) (*Result, error) {

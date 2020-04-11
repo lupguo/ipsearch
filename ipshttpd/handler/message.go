@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/tkstorm/ip-search/version"
+	"github.com/lupguo/ipsearch/version"
 	"log"
 	"net/http"
 	"text/template"

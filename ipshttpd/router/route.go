@@ -1,12 +1,12 @@
-package ipshttpd
+package router
 
 import (
-	"github.com/tkstorm/ip-search/ipshttpd/handler"
+	"github.com/lupguo/ipsearch/ipshttpd/handler"
 	"net/http"
 )
 
-// registeRoute 路由注册
-func registeRoute() {
+// Register 路由注册
+func Register() {
 	http.HandleFunc("/", handler.HelpMessage)
 	http.HandleFunc("/ips", handler.Ipsearch)
 }

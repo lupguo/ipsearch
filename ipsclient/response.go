@@ -15,6 +15,9 @@ type Result struct {
 
 // Render IpsResult消息展示模式
 func (r *Result) Render(mode string) (msg string, err error) {
+	if r == nil {
+		return "empty ipsearch result", nil
+	}
 	switch mode {
 	case "json":
 		rt, err := json.Marshal(r)
@@ -60,4 +63,3 @@ func (tb *Taobao) toResult() *Result {
 		Ip:      tb.Data["ip"],
 	}
 }
-
