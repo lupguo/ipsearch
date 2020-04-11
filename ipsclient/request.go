@@ -128,6 +128,7 @@ var (
 	errRetryTimeout     = errors.New("HTTP request timed out and exceeded the maximum retry time")
 	errRequestFailed    = errors.New("HTTP request failed, keep trying")
 	errHttpStatusCode   = errors.New("HTTP request response is not 200 status code, keep trying")
+	errEmptyContent     = errors.New("HTTP request response is empty, keep trying")
 	errTaobaoStatusCode = errors.New("the json data status code returned from Taobao is non-zero")
 )
 
@@ -150,25 +151,24 @@ func (ips *Ips) doHttpRequest() (r *Result, err error) {
 				ch <- httpResult{nil, errRetryTimeout}
 			default:
 				resp, err := ips.Client.Do(ips.Request)
-				if ips.Debug {
-					log.Printf("%v %v\n", err, resp)
-				}
-				if err != nil {
-					if ips.Debug {
-						log.Println(errRequestFailed)
+				if err != nil || resp.StatusCode != http.StatusOK || resp.ContentLength == 0 {
+					switch {
+					case err != nil:
+						err = errRequestFailed
+					case resp.StatusCode != http.StatusOK:
+						err = errHttpStatusCode
+					case resp.ContentLength == 0:
+						err = errEmptyContent
 					}
-					time.Sleep(1000 * time.Millisecond)
-					continue
-				}
-				if resp.StatusCode != http.StatusOK {
 					if ips.Debug {
-						log.Println(errHttpStatusCode)
+						log.Printf("%v %v\n", err, resp)
+						log.Println(err)
 					}
 					time.Sleep(1000 * time.Millisecond)
 					continue
 				}
 				r, err := ips.parseBody(resp)
-				ch <- httpResult{r, nil}
+				ch <- httpResult{r, err}
 				over = true
 			}
 		}
