@@ -157,8 +157,8 @@ func (ips *Ips) doHttpRequest() (r *Result, err error) {
 						err = errRequestFailed
 					case resp.StatusCode != http.StatusOK:
 						err = errHttpStatusCode
-					case resp.ContentLength == 0:
-						err = errEmptyContent
+					//case resp.ContentLength == 0:
+					//	err = errEmptyContent
 					}
 					if ips.Debug {
 						log.Println(resp, err)
