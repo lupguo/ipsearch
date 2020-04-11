@@ -11,3 +11,4 @@ func FatalOnError(err error, msg string) {
 		log.Fatalln(msg, err)
 	}
 }
+

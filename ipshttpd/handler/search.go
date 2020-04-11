@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"github.com/lupguo/ipsearch/config"
 	"github.com/lupguo/ipsearch/ipsclient"
 	"log"
 	"net"
@@ -14,7 +15,7 @@ func Ipsearch(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
-	ips := ipsclient.NewIps(false, r.FormValue("proxy"), 0)
+	ips := ipsclient.NewIps(config.Get().Debug, r.FormValue("proxy"), config.Get().Timeout)
 	rs, err := ips.Search(getIP(r))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

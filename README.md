@@ -1,48 +1,40 @@
 ## ipsearch
 > ip serach 查询是基于 http://ip.taobao.com/ipSearch.html 接口代理获取的数据（有请求频率限制）
-> 
+>
 > 以前使用ip.cn会出现频次限制，可以基于命令行走淘宝接口查询
 
 ### 安装
 ```
 // 安装ipsearch命令工具，以及httpd服务
-go get -u -v github.com/lupguo/ipsearch/cmd/...
+go get -u -v github.com/lupguo/ipsearch
 ```
 
 ### ipsearch 使用
 ```
-$ ipsearch -h
-Usage of ipsearch:
+// 命令行使用
+Usage of ./ipsearch:
   -debug
     	debug for request response content
+  -format string
+    	response message format, default is json (json|text) (default "text")
   -ip string
-    	ip to search, myip is current ip (default "myip")
-  -mode string
-    	response content mode (json|text) (default "text")
+    	the IP to be search, the default is the IP of the machine currently executing the cmdline
+  -listen string
+    	the listen address for ip search http server, eg 127.0.0.1:6100
   -proxy string
-    	request by proxy, using for debug
+    	http proxy using for debugging, no proxy by default, eg http://127.0.0.1:8888
   -timeout duration
     	set http request timeout seconds (default 10s)
+  -version
+    	ipsearch version
 
-// 查看出口IP相关信息
-$ ipsearch
-Ip: 210.21.233.226, Network: 联通, Address: 中国 广东 深圳
-
-// 查看指定IP，并以JSON格式输出
-$ ipsearch -ip 118.144.149.206 -mode json
-{"addr":"中国 北京 北京","network":"鹏博士","ip":"118.144.149.206"}
-```
-
-### ipshttpd
-
-支持ipshttpd部署，相关请求会转发到ipshttpd查询服务器，然后将请求代理转发给淘宝查询IP信息。
-
-```
 // http服务
-$ ipshttpd -listen 127.0.0.1:8680
-2019/08/07 18:36:43 ip search httpd listen on 127.0.0.1:8680
+$ ./ipsearch -listen '0.0.0.0:6100'
+2020/04/12 01:08:03 ipshttpd listen on http://0.0.0.0:6100, ipshttd version 0.4.0'
+
 // 请求查询
-$ curl localhost:8680
+$ curl localhost:6100
+Version 0.4.0
 Usage:
 	//search current client ip information
 	curl localhost:8680/ips
@@ -57,12 +49,8 @@ $ curl 'localhost:8680/ips?ip=175.190.11.16'
 {"addr":"中国 辽宁 大连","network":"鹏博士","ip":"175.190.11.16"}
 ```
 
-### 原始的Ip查询信息
-```
-$ curl -XPOST -d 'ip=myip' http://ip.taobao.com/service/getIpInfo2.php
-```
-
-### 注意
+### 变更内容
+- 2020-04-12：更新了目录结构，调整了重试机制
 - 2019-08-07：代码目前版本还比较粗糙，会持续完善！
     - [ ] 代理问题，寻求更好用的代理
     - [x] 程序中一些已知的Bug修复 
