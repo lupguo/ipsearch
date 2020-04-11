@@ -1,4 +1,4 @@
-package ipsearch
+package ipsutil
 
 import (
 	"errors"

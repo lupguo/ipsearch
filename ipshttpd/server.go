@@ -1,8 +1,7 @@
 // ipshttpd 是ip search httpd服务器，支持通过http查询ip相关信息
-package main
+package ipshttpd
 
 import (
-	"flag"
 	"fmt"
 	"github.com/tkstorm/ip-search/ipsearch"
 	"log"
@@ -12,28 +11,9 @@ import (
 	"os/signal"
 )
 
-var (
-	listen  string
-	version bool
-)
+func Main() {
+	registeRoute()
 
-func init() {
-	flag.StringVar(&listen, "listen", "127.0.0.1:8680", "the listen address for ip search http server")
-	flag.BoolVar(&version, "version", false, "ipsearch version")
-	flag.Parse()
-}
-
-func main() {
-	// version
-	if version {
-		fmt.Println("ipshttpd " + ipsearch.Version())
-		return
-	}
-
-	// route register
-	routeRegister()
-
-	// server running
 	go func() {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
@@ -43,14 +23,8 @@ func main() {
 		}
 		os.Exit(1)
 	}()
-	log.Printf("ipshttpd listen on http://%s, %s", listen, ipsearch.Version())
-	log.Fatalln(http.ListenAndServe(listen, nil))
-}
-
-// 路由注册
-func routeRegister() {
-	http.HandleFunc("/", helpMessage)
-	http.HandleFunc("/ips", ipsHandler)
+	//log.Printf("ipshttpd listen on http://%s, %s", listen, version2.Version())
+	//log.Fatalln(http.ListenAndServe(listen, nil))
 }
 
 // 帮助信息
@@ -64,7 +38,7 @@ Usage:
 `
 
 func helpMessage(w http.ResponseWriter, r *http.Request) {
-	helpMsg := fmt.Sprintf(usageFormat, ipsearch.Version())
+	helpMsg := fmt.Sprintf(usageFormat, version2.Version())
 	_, _ = fmt.Fprintf(w, helpMsg)
 }
 
@@ -86,6 +60,7 @@ func ipsHandler(w http.ResponseWriter, r *http.Request) {
 		if realIp != "" {
 			ip = realIp
 		}
+		ip = "myip"
 	}
 	// ip search
 	ips := ipsearch.NewIps(false, r.FormValue("proxy"), 0)
@@ -95,7 +70,7 @@ func ipsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// out by json format
-	msg, err := ipsRs.Message("json")
+	msg, err := ipsRs.Render("json")
 	if err != nil {
 		http.Error(w, fmt.Sprintf("ip serach message show error: %s", err), http.StatusInternalServerError)
 	}
