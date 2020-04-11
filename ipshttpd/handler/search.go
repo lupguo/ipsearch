@@ -34,15 +34,16 @@ func Ipsearch(w http.ResponseWriter, r *http.Request) {
 // getIP 获取HTTP请求信息中的ip内容
 func getIP(r *http.Request) string {
 	ip := r.FormValue("ip")
-	if ip == "" {
-		realIp := r.Header.Get("X-Real-IP")
-		if realIp != "" {
-			return realIp
-		}
-		remoteIp, _, err := net.SplitHostPort(r.RemoteAddr)
-		if err == nil && remoteIp != "127.0.0.1" {
-			return remoteIp
-		}
+	if ip != "" {
+		return ip
+	}
+	realIp := r.Header.Get("X-Real-IP")
+	if realIp != "" {
+		return realIp
+	}
+	remoteIp, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err == nil && remoteIp != "127.0.0.1" {
+		return remoteIp
 	}
 	return "myip"
 }

@@ -8,13 +8,17 @@ import (
 	"github.com/lupguo/ipsearch/ipshttpd"
 	"github.com/lupguo/ipsearch/ipsutil"
 	"github.com/lupguo/ipsearch/version"
+	"log"
 )
 
 var cfg = config.Get()
 
 func main() {
+	if cfg.Debug {
+		log.Printf("%#v\n", cfg)
+	}
 	version.ShowVersion(cfg.Version)
-	if cfg.Listen!= "" {
+	if cfg.Listen != "" {
 		ipshttpd.Main()
 	}
 	cmdline()
