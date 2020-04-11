@@ -161,8 +161,7 @@ func (ips *Ips) doHttpRequest() (r *Result, err error) {
 						err = errEmptyContent
 					}
 					if ips.Debug {
-						log.Printf("%v %v\n", err, resp)
-						log.Println(err)
+						log.Println(resp, err)
 					}
 					time.Sleep(1000 * time.Millisecond)
 					continue

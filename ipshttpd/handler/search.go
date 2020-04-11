@@ -18,6 +18,7 @@ func Ipsearch(w http.ResponseWriter, r *http.Request) {
 	ips := ipsclient.NewIps(config.Get().Debug, r.FormValue("proxy"), config.Get().Timeout)
 	rs, err := ips.Search(getIP(r))
 	if err != nil {
+		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -26,7 +27,6 @@ func Ipsearch(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("ip serach message show error: %s", err), http.StatusInternalServerError)
 		return
 	}
-
 	log.Println(msg)
 	_, _ = fmt.Fprint(w, msg)
 }
