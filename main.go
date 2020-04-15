@@ -2,6 +2,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/lupguo/ipsearch/config"
 	"github.com/lupguo/ipsearch/ipsclient"
@@ -14,6 +15,7 @@ import (
 var cfg = config.Get()
 
 func main() {
+	flag.Parse()
 	if cfg.Debug {
 		log.Printf("%#v\n", cfg)
 	}

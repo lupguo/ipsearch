@@ -18,6 +18,7 @@ func init() {
 }
 
 var taobaoUrl = "http://ip.taobao.com/service/getIpInfo.php"
+var ip138Url = "ipchaxun.com"
 
 // Ips 为Ip Search搜索对象
 type Ips struct {
@@ -157,8 +158,8 @@ func (ips *Ips) doHttpRequest() (r *Result, err error) {
 						err = errRequestFailed
 					case resp.StatusCode != http.StatusOK:
 						err = errHttpStatusCode
-					//case resp.ContentLength == 0:
-					//	err = errEmptyContent
+						//case resp.ContentLength == 0:
+						//	err = errEmptyContent
 					}
 					if ips.Debug {
 						log.Println(resp, err)

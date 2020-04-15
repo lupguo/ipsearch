@@ -11,10 +11,10 @@ import (
 var usageFormat = `Version {{.}}
 Usage:
 	//search current client ip information
-	curl localhost:8680/ips
+	curl localhost:6100/ips
 
 	//search for target ip information  
-	curl localhost:8680/ips?ip=targetIp	
+	curl localhost:6100/ips?ip=targetIp	
 `
 
 var tpl = template.Must(template.New("verhttpd").Parse(usageFormat))
