@@ -37,16 +37,63 @@ $ curl localhost:6100
 Version 0.4.0
 Usage:
 	//search current client ip information
-	curl localhost:8680/ips
+	curl localhost:6100/ips
 
 	//search for target ip information
-	curl localhost:8680/ips?ip=targetIp
+	curl localhost:6100/ips?ip=targetIp
 
 // 通过curl查询
-$ curl localhost:8680/ips
+$ curl localhost:6100/ips
 {"addr":"中国 广东 深圳","network":"鹏博士","ip":"175.191.11.165"}
-$ curl 'localhost:8680/ips?ip=175.190.11.16'
+$ curl 'localhost:6100/ips?ip=175.190.11.16'
 {"addr":"中国 辽宁 大连","network":"鹏博士","ip":"175.190.11.16"}
+```
+
+### Centos Systemd安装
+
+编辑保存 /etc/systemd/system/ipshttpd.service 文件，启动 `systemctl start ipshttpd.service`
+
+```bash
+[Unit]
+Description=Ipsearch used for searching ip infomation
+After=syslog.target network.target remote-fs.target nss-lookup.target
+
+[Service]
+Type=simple
+User=www
+PIDFile=/var/run/ipshttpd.pid
+ExecStart=/data/go/bin/ipsearch -listen 127.0.0.1:6100
+TimeoutStartSec=3s
+ExecStop=/bin/kill -s QUIT $MAINPID
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### 添加Nginx 代理
+```shell script
+server {
+  listen 80;
+  listen 443 ssl http2;
+  server_name ioio.cool;
+  root /data/www/ioio.cool/;
+
+  #ssl
+  include ssl_cert.conf;
+
+  # ioio.cool
+  location / {
+      proxy_pass  http://127.0.0.1:6100;
+      proxy_set_header X-Real-IP $remote_addr;
+  }
+}
+```
+
+### 执行请求
+```shell script
+$ curl ioio.cool/ips
+{"addr":"中国 广东 深圳","network":"鹏博士","ip":"14.103.83.43"}
 ```
 
 ### 变更内容
