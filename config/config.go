@@ -9,6 +9,7 @@ type Config struct {
 	Ip, Proxy, Format, Listen string
 	Debug, Version            bool
 	Timeout                   time.Duration
+	Httpd                     bool
 }
 
 var cfg Config
@@ -20,6 +21,7 @@ func init() {
 	flag.BoolVar(&cfg.Debug, "debug", false, "debug for request response content ")
 	flag.DurationVar(&cfg.Timeout, "timeout", 10*time.Second, "set http request timeout seconds")
 	flag.StringVar(&cfg.Listen, "listen", "127.0.0.1:6100", "the listen address for ip search http server, eg 127.0.0.1:6100")
+	flag.BoolVar(&cfg.Httpd, "httpd", false, "the http server for ip search")
 	flag.BoolVar(&cfg.Version, "version", false, "ipsearch version")
 }
 

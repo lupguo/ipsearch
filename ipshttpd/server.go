@@ -8,11 +8,10 @@ import (
 	"net/http"
 )
 
-var listen = config.Get().Listen
-
 func Main() {
 	go signalStop()
 	router.Register()
-	log.Printf("ipshttpd listen on http://%s, ipshttd version %s", listen, version.VerHttpd)
+	listen := config.Get().Listen
+	log.Printf("ipshttpd listen on http://%s, ipshttd version %s", listen, version.VerClient)
 	log.Fatalln(http.ListenAndServe(listen, nil))
 }
