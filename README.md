@@ -12,15 +12,17 @@ go get -u -v github.com/lupguo/ipsearch
 ### ipsearch 使用
 ```
 // 命令行使用
-Usage of ./ipsearch:
+Usage of ipsearch:
   -debug
     	debug for request response content
   -format string
     	response message format, default is json (json|text) (default "text")
+  -httpd
+    	the http server for ip search
   -ip string
     	the IP to be search, the default is the IP of the machine currently executing the cmdline
   -listen string
-    	the listen address for ip search http server, eg 127.0.0.1:6100
+    	the listen address for ip search http server, eg 127.0.0.1:6100 (default "127.0.0.1:6100")
   -proxy string
     	http proxy using for debugging, no proxy by default, eg http://127.0.0.1:8888
   -timeout duration
@@ -28,8 +30,12 @@ Usage of ./ipsearch:
   -version
     	ipsearch version
 
+// 客户端查询
+$ ipsearch
+Ip: 210.21.233.226, Network: 联通, Address: 中国 广东 深圳
+
 // http服务
-$ ./ipsearch -listen '0.0.0.0:6100'
+$ ./ipsearch -httpd -listen '0.0.0.0:6100'
 2020/04/12 01:08:03 ipshttpd listen on http://0.0.0.0:6100, ipshttd version 0.4.0'
 
 // 请求查询
